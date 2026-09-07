@@ -1,313 +1,528 @@
-/* =========================================================
-   Trading Tracker Dashboard — script.js
-   Mengambil data trade dari Cloudflare Worker API dan
-   merender statistik, tabel (desktop), dan kartu (mobile).
-   ========================================================= */
-
-(function () {
+(() => {
   "use strict";
 
-  // -------- Config --------
-  const API_URL = "https://trading-tracker-v1.kodokzganz.workers.dev/api/trades";
+  const API_URL =
+    "https://trading-tracker-v1.kodokzganz.workers.dev/api/trades";
 
-  // -------- State --------
   let allTrades = [];
-  let isLoading = false;
-  let filters = { side: "ALL", status: "ALL" };
-
-  // -------- DOM refs --------
-  const els = {
-    refreshBtn: document.getElementById("refreshBtn"),
-    retryBtn: document.getElementById("retryBtn"),
-    lastUpdated: document.getElementById("lastUpdated"),
-
-    statTotal: document.getElementById("statTotal"),
-    statOpen: document.getElementById("statOpen"),
-    statProfit: document.getElementById("statProfit"),
-    statWinRate: document.getElementById("statWinRate"),
-    profitCard: document.getElementById("profitCard"),
-
-    sideFilter: document.getElementById("sideFilter"),
-    statusFilter: document.getElementById("statusFilter"),
-    resultCount: document.getElementById("resultCount"),
-
-    loadingState: document.getElementById("loadingState"),
-    errorState: document.getElementById("errorState"),
-    errorDesc: document.getElementById("errorDesc"),
-    emptyState: document.getElementById("emptyState"),
-    emptyTitle: document.getElementById("emptyTitle"),
-    emptyDesc: document.getElementById("emptyDesc"),
-
-    tableWrap: document.getElementById("tableWrap"),
-    tableBody: document.getElementById("tradeTableBody"),
-    tradeCards: document.getElementById("tradeCards"),
+  let filters = {
+    side: "ALL",
+    status: "ALL"
   };
 
-  // -------- Helpers --------
-  function normalize(str) {
-    return (str || "").toString().trim().toUpperCase();
+  const $ = (id) => document.getElementById(id);
+
+  const els = {
+    refresh: $("refreshBtn"),
+    refreshIcon: $("refreshIcon"),
+    lastUpdated: $("lastUpdated"),
+
+    total: $("statTotal"),
+    open: $("statOpen"),
+    profit: $("statProfit"),
+    winRate: $("statWinRate"),
+    profitStatus: $("profitStatus"),
+
+    recent: $("recentTrades"),
+    emptyRecent: $("emptyRecent"),
+
+    table: $("tradeTableBody"),
+    cards: $("tradeCards"),
+    count: $("resultCount"),
+
+    analyticsWin: $("analyticsWin"),
+    analyticsProfit: $("analyticsProfit"),
+    analyticsTrades: $("analyticsTrades"),
+    analyticsOpen: $("analyticsOpen")
+  };
+
+  function normalize(value) {
+    return String(value ?? "").trim().toUpperCase();
   }
 
-  function isOpenStatus(status) {
-    return normalize(status) === "OPEN";
-  }
-
-  function isBuySide(side) {
-    return normalize(side) === "BUY";
-  }
-
-  function formatNumber(value, decimals) {
-    if (value === null || value === undefined || value === "") return "–";
+  function number(value) {
     const n = Number(value);
-    if (Number.isNaN(n)) return "–";
-    return n.toLocaleString("id-ID", {
-      minimumFractionDigits: decimals,
-      maximumFractionDigits: decimals,
+    return Number.isFinite(n) ? n : 0;
+  }
+
+  function money(value) {
+    const n = number(value);
+
+    const sign = n > 0 ? "+" : "";
+
+    return sign + n.toLocaleString("id-ID", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
     });
   }
 
-  function formatPrice(value) {
-    if (value === null || value === undefined || value === 0 || value === "") return "–";
-    const n = Number(value);
-    if (Number.isNaN(n)) return "–";
-    return n.toLocaleString("id-ID", { minimumFractionDigits: 2, maximumFractionDigits: 5 });
+  function price(value) {
+    const n = number(value);
+
+    if (!n) return "–";
+
+    return n.toLocaleString("id-ID", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 5
+    });
   }
 
-  function formatProfit(value) {
-    const n = Number(value) || 0;
-    const sign = n > 0 ? "+" : "";
-    return sign + n.toLocaleString("id-ID", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  }
-
-  function formatDateTime(value) {
+  function date(value) {
     if (!value) return "–";
+
     const d = new Date(value);
-    if (Number.isNaN(d.getTime())) return String(value);
+
+    if (Number.isNaN(d.getTime())) {
+      return String(value);
+    }
+
     return d.toLocaleString("id-ID", {
       day: "2-digit",
       month: "short",
       hour: "2-digit",
-      minute: "2-digit",
+      minute: "2-digit"
     });
   }
 
-  function profitClass(value) {
-    const n = Number(value) || 0;
-    if (n > 0) return "num-long";
-    if (n < 0) return "num-short";
-    return "num-neutral";
+  function escape(value) {
+    return String(value ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
   }
 
-  // -------- Fetch --------
-  async function fetchTrades() {
-    setLoading(true);
-    hideStates();
-    els.loadingState.hidden = false;
+  function isOpen(trade) {
+    return normalize(trade.status) === "OPEN";
+  }
 
-    try {
-      const res = await fetch(API_URL);
-      if (!res.ok) {
-        throw new Error("HTTP " + res.status);
-      }
-      const json = await res.json();
-      if (!json || json.success !== true || !Array.isArray(json.data)) {
-        throw new Error("Format respons API tidak sesuai");
-      }
-      allTrades = json.data;
-      els.lastUpdated.textContent = "Diperbarui " + new Date().toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" });
-      render();
-    } catch (err) {
-      showError(err);
-    } finally {
-      setLoading(false);
+  function getProfitClass(value) {
+    const n = number(value);
+
+    if (n > 0) return "buy";
+    if (n < 0) return "sell";
+
+    return "";
+  }
+
+  function calculateStats() {
+
+    const total = allTrades.length;
+
+    const open = allTrades.filter(isOpen).length;
+
+    const profit = allTrades.reduce(
+      (sum, trade) => sum + number(trade.profit),
+      0
+    );
+
+    const closed = allTrades.filter(
+      trade => !isOpen(trade)
+    );
+
+    const wins = closed.filter(
+      trade => number(trade.profit) > 0
+    ).length;
+
+    const winRate =
+      closed.length
+        ? (wins / closed.length) * 100
+        : null;
+
+    return {
+      total,
+      open,
+      profit,
+      winRate
+    };
+  }
+
+  function renderStats() {
+
+    const stats = calculateStats();
+
+    els.total.textContent =
+      stats.total.toLocaleString("id-ID");
+
+    els.open.textContent =
+      stats.open.toLocaleString("id-ID");
+
+    els.profit.textContent =
+      money(stats.profit);
+
+    els.profit.classList.remove("buy", "sell");
+
+    if (stats.profit > 0) {
+      els.profit.classList.add("buy");
+      els.profitStatus.textContent = "Positive performance";
+      els.profitStatus.className = "positive";
     }
+
+    else if (stats.profit < 0) {
+      els.profit.classList.add("sell");
+      els.profitStatus.textContent = "Negative performance";
+      els.profitStatus.className = "sell";
+    }
+
+    else {
+      els.profitStatus.textContent = "No profit recorded";
+      els.profitStatus.className = "";
+    }
+
+    els.winRate.textContent =
+      stats.winRate === null
+        ? "–"
+        : stats.winRate.toFixed(1) + "%";
+
+    els.analyticsWin.textContent =
+      stats.winRate === null
+        ? "–"
+        : stats.winRate.toFixed(1) + "%";
+
+    els.analyticsProfit.textContent =
+      money(stats.profit);
+
+    els.analyticsTrades.textContent =
+      stats.total;
+
+    els.analyticsOpen.textContent =
+      stats.open;
   }
 
-  function setLoading(loading) {
-    isLoading = loading;
-    els.refreshBtn.classList.toggle("is-loading", loading);
-    els.refreshBtn.disabled = loading;
-  }
+  function filteredTrades() {
 
-  function hideStates() {
-    els.loadingState.hidden = true;
-    els.errorState.hidden = true;
-    els.emptyState.hidden = true;
-    els.tableWrap.hidden = true;
-    els.tradeCards.hidden = true;
-  }
+    return allTrades.filter(trade => {
 
-  function showError(err) {
-    hideStates();
-    els.errorState.hidden = false;
-    els.errorDesc.textContent = "Tidak bisa terhubung ke server. " + (err && err.message ? "(" + err.message + ")" : "");
-  }
+      const side = normalize(trade.side);
+      const status = normalize(trade.status);
 
-  // -------- Filtering --------
-  function getFilteredTrades() {
-    return allTrades.filter((t) => {
-      if (filters.side !== "ALL") {
-        const side = normalize(t.side);
-        if (filters.side === "BUY" && side !== "BUY") return false;
-        if (filters.side === "SELL" && side !== "SELL") return false;
+      if (
+        filters.side !== "ALL" &&
+        side !== filters.side
+      ) {
+        return false;
       }
-      if (filters.status !== "ALL") {
-        const status = normalize(t.status);
-        if (filters.status !== status) return false;
+
+      if (
+        filters.status !== "ALL" &&
+        status !== filters.status
+      ) {
+        return false;
       }
+
       return true;
     });
   }
 
-  // -------- Stats (dihitung dari SELURUH data, tidak terpengaruh filter) --------
-  function renderStats() {
-    const total = allTrades.length;
-    const openCount = allTrades.filter((t) => isOpenStatus(t.status)).length;
-    const totalProfit = allTrades.reduce((sum, t) => sum + (Number(t.profit) || 0), 0);
+  function renderRecent() {
 
-    const closedTrades = allTrades.filter((t) => !isOpenStatus(t.status));
-    const winCount = closedTrades.filter((t) => (Number(t.profit) || 0) > 0).length;
-    const winRate = closedTrades.length > 0 ? (winCount / closedTrades.length) * 100 : null;
+    const trades = allTrades.slice(0, 5);
 
-    els.statTotal.textContent = total.toLocaleString("id-ID");
-    els.statOpen.textContent = openCount.toLocaleString("id-ID");
+    els.recent.innerHTML = "";
 
-    els.statProfit.textContent = formatProfit(totalProfit);
-    els.statProfit.classList.remove("is-long", "is-short");
-    els.profitCard.classList.remove("stat-card--long", "stat-card--short");
-    if (totalProfit > 0) {
-      els.statProfit.classList.add("is-long");
-      els.profitCard.classList.add("stat-card--long");
-    } else if (totalProfit < 0) {
-      els.statProfit.classList.add("is-short");
-      els.profitCard.classList.add("stat-card--short");
-    }
-
-    els.statWinRate.textContent = winRate === null ? "–" : winRate.toFixed(1) + "%";
-  }
-
-  // -------- Render table + cards --------
-  function renderTable(trades) {
-    els.tableBody.innerHTML = trades
-      .map((t) => {
-        const buy = isBuySide(t.side);
-        const open = isOpenStatus(t.status);
-        return `
-        <tr>
-          <td class="cell-muted">${escapeHtml(t.ticket)}</td>
-          <td>${escapeHtml(t.symbol)}</td>
-          <td><span class="badge ${buy ? "badge--buy" : "badge--sell"}">${buy ? "BUY" : "SELL"}</span></td>
-          <td>${formatNumber(t.volume, 2)}</td>
-          <td>${formatPrice(t.entry_price)}</td>
-          <td class="cell-muted">${formatPrice(t.sl)}</td>
-          <td class="cell-muted">${formatPrice(t.tp)}</td>
-          <td class="${profitClass(t.profit)}">${formatProfit(t.profit)}</td>
-          <td><span class="badge ${open ? "badge--open" : "badge--closed"}">${open ? "OPEN" : "CLOSED"}</span></td>
-          <td class="cell-muted">${formatDateTime(t.open_time)}</td>
-        </tr>`;
-      })
-      .join("");
-  }
-
-  function renderCards(trades) {
-    els.tradeCards.innerHTML = trades
-      .map((t) => {
-        const buy = isBuySide(t.side);
-        const open = isOpenStatus(t.status);
-        return `
-        <div class="trade-card">
-          <div class="trade-card__top">
-            <div class="trade-card__symbol">
-              <span class="trade-card__symbol-name">${escapeHtml(t.symbol)}</span>
-              <span class="badge ${buy ? "badge--buy" : "badge--sell"}">${buy ? "BUY" : "SELL"}</span>
-            </div>
-            <span class="trade-card__profit ${profitClass(t.profit)}">${formatProfit(t.profit)}</span>
-          </div>
-          <div class="trade-card__meta">
-            <span>#${escapeHtml(t.ticket)}</span>
-            <span class="badge ${open ? "badge--open" : "badge--closed"}">${open ? "OPEN" : "CLOSED"}</span>
-          </div>
-          <div class="trade-card__grid">
-            <div class="trade-card__field">
-              <span class="trade-card__field-label">Volume</span>
-              <span class="trade-card__field-value">${formatNumber(t.volume, 2)}</span>
-            </div>
-            <div class="trade-card__field">
-              <span class="trade-card__field-label">Entry</span>
-              <span class="trade-card__field-value">${formatPrice(t.entry_price)}</span>
-            </div>
-            <div class="trade-card__field">
-              <span class="trade-card__field-label">SL</span>
-              <span class="trade-card__field-value">${formatPrice(t.sl)}</span>
-            </div>
-            <div class="trade-card__field">
-              <span class="trade-card__field-label">TP</span>
-              <span class="trade-card__field-value">${formatPrice(t.tp)}</span>
-            </div>
-          </div>
-          <div class="trade-card__footer">Dibuka ${formatDateTime(t.open_time)}</div>
-        </div>`;
-      })
-      .join("");
-  }
-
-  function escapeHtml(value) {
-    if (value === null || value === undefined) return "";
-    return String(value)
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;");
-  }
-
-  // -------- Main render --------
-  function render() {
-    renderStats();
-
-    const filtered = getFilteredTrades();
-    els.resultCount.textContent = filtered.length + " dari " + allTrades.length + " trade";
-
-    hideStates();
-
-    if (allTrades.length === 0) {
-      els.emptyTitle.textContent = "Belum ada data trading";
-      els.emptyDesc.textContent = "Data akan muncul di sini setelah trade tercatat.";
-      els.emptyState.hidden = false;
+    if (!trades.length) {
+      els.emptyRecent.style.display = "block";
       return;
     }
 
-    if (filtered.length === 0) {
-      els.emptyTitle.textContent = "Tidak ada trade yang cocok";
-      els.emptyDesc.textContent = "Coba ubah filter posisi atau status.";
-      els.emptyState.hidden = false;
-      return;
-    }
+    els.emptyRecent.style.display = "none";
 
-    renderTable(filtered);
-    renderCards(filtered);
-    els.tableWrap.hidden = false;
-    els.tradeCards.hidden = false;
-  }
+    trades.forEach(trade => {
 
-  // -------- Filter pill wiring --------
-  function wirePillGroup(container, key) {
-    container.addEventListener("click", (e) => {
-      const btn = e.target.closest(".pill");
-      if (!btn) return;
-      filters[key] = btn.dataset.value;
-      [...container.querySelectorAll(".pill")].forEach((p) => p.classList.toggle("is-active", p === btn));
-      render();
+      const side = normalize(trade.side);
+      const open = isOpen(trade);
+      const profit = number(trade.profit);
+
+      const row = document.createElement("div");
+
+      row.className = "trade-row";
+
+      row.innerHTML = `
+        <div class="trade-main">
+          <strong>${escape(trade.symbol)}</strong>
+          <small>#${escape(trade.ticket)}</small>
+        </div>
+
+        <div class="trade-side ${side === "BUY" ? "buy" : "sell"}">
+          ${side}
+        </div>
+
+        <div class="trade-profit ${getProfitClass(profit)}">
+          ${money(profit)}
+        </div>
+
+        <div class="trade-status">
+          ${open ? "OPEN" : "CLOSED"}
+        </div>
+      `;
+
+      els.recent.appendChild(row);
     });
   }
 
-  // -------- Init --------
-  els.refreshBtn.addEventListener("click", () => {
-    if (!isLoading) fetchTrades();
-  });
-  els.retryBtn.addEventListener("click", () => {
-    if (!isLoading) fetchTrades();
-  });
-  wirePillGroup(els.sideFilter, "side");
-  wirePillGroup(els.statusFilter, "status");
+  function renderJournal() {
 
-  fetchTrades();
+    const trades = filteredTrades();
+
+    els.count.textContent =
+      `${trades.length} dari ${allTrades.length} trades`;
+
+    els.table.innerHTML = "";
+    els.cards.innerHTML = "";
+
+    trades.forEach(trade => {
+
+      const side = normalize(trade.side);
+      const status = normalize(trade.status);
+      const profit = number(trade.profit);
+
+      const tr = document.createElement("tr");
+
+      tr.innerHTML = `
+        <td>${escape(trade.symbol)}</td>
+
+        <td>
+          <span class="badge ${
+            side === "BUY"
+              ? "badge-buy"
+              : "badge-sell"
+          }">
+            ${side}
+          </span>
+        </td>
+
+        <td>${number(trade.volume).toFixed(2)}</td>
+
+        <td>${price(trade.entry_price)}</td>
+
+        <td>${price(trade.sl)}</td>
+
+        <td>${price(trade.tp)}</td>
+
+        <td class="${getProfitClass(profit)}">
+          ${money(profit)}
+        </td>
+
+        <td>
+          <span class="badge ${
+            status === "OPEN"
+              ? "badge-open"
+              : "badge-closed"
+          }">
+            ${status}
+          </span>
+        </td>
+
+        <td>${date(trade.open_time)}</td>
+      `;
+
+      els.table.appendChild(tr);
+
+      const card = document.createElement("div");
+
+      card.className = "mobile-trade glass";
+
+      card.innerHTML = `
+        <div class="mobile-trade-top">
+
+          <div>
+            <div class="mobile-symbol">
+              ${escape(trade.symbol)}
+            </div>
+
+            <span class="badge ${
+              side === "BUY"
+                ? "badge-buy"
+                : "badge-sell"
+            }">
+              ${side}
+            </span>
+          </div>
+
+          <div class="mobile-profit ${getProfitClass(profit)}">
+            ${money(profit)}
+          </div>
+
+        </div>
+
+        <div class="mobile-meta">
+
+          <div>
+            <span>ENTRY</span>
+            <strong>${price(trade.entry_price)}</strong>
+          </div>
+
+          <div>
+            <span>SL</span>
+            <strong>${price(trade.sl)}</strong>
+          </div>
+
+          <div>
+            <span>TP</span>
+            <strong>${price(trade.tp)}</strong>
+          </div>
+
+        </div>
+      `;
+
+      els.cards.appendChild(card);
+    });
+  }
+
+  function render() {
+    renderStats();
+    renderRecent();
+    renderJournal();
+  }
+
+  async function loadTrades() {
+
+    els.refresh.disabled = true;
+    els.refreshIcon.style.display = "inline-block";
+
+    try {
+
+      const response = await fetch(API_URL);
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+
+      const json = await response.json();
+
+      if (
+        !json ||
+        json.success !== true ||
+        !Array.isArray(json.data)
+      ) {
+        throw new Error("Invalid API response");
+      }
+
+      allTrades = json.data;
+
+      els.lastUpdated.textContent =
+        "Updated " +
+        new Date().toLocaleTimeString("id-ID", {
+          hour: "2-digit",
+          minute: "2-digit"
+        });
+
+      render();
+
+    } catch (error) {
+
+      console.error(error);
+
+      els.lastUpdated.textContent =
+        "API connection failed";
+
+    } finally {
+
+      els.refresh.disabled = false;
+
+    }
+  }
+
+  /* Navigation */
+
+  function navigate(page) {
+
+    document.querySelectorAll(".page")
+      .forEach(section => {
+        section.classList.remove("active");
+      });
+
+    const target =
+      document.getElementById(page + "Page");
+
+    if (target) {
+      target.classList.add("active");
+    }
+
+    document.querySelectorAll(".nav-item")
+      .forEach(item => {
+        item.classList.toggle(
+          "active",
+          item.dataset.page === page
+        );
+      });
+
+    const titles = {
+      dashboard: "Dashboard",
+      journal: "Journal",
+      analytics: "Analytics",
+      settings: "Settings"
+    };
+
+    $("pageTitle").textContent =
+      titles[page] || "Dashboard";
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth"
+    });
+  }
+
+  document.querySelectorAll(
+    ".nav-item[data-page]"
+  ).forEach(button => {
+
+    button.addEventListener("click", () => {
+      navigate(button.dataset.page);
+    });
+
+  });
+
+  document.querySelectorAll(
+    "[data-page-target]"
+  ).forEach(button => {
+
+    button.addEventListener("click", () => {
+      navigate(button.dataset.pageTarget);
+    });
+
+  });
+
+  /* Filters */
+
+  function setupFilter(containerId, key) {
+
+    const container = $(containerId);
+
+    if (!container) return;
+
+    container.addEventListener("click", event => {
+
+      const button =
+        event.target.closest(".pill");
+
+      if (!button) return;
+
+      container
+        .querySelectorAll(".pill")
+        .forEach(pill => {
+          pill.classList.remove("active");
+        });
+
+      button.classList.add("active");
+
+      filters[key] =
+        button.dataset.value;
+
+      renderJournal();
+
+    });
+
+  }
+
+  setupFilter("sideFilter", "side");
+  setupFilter("statusFilter", "status");
+
+  els.refresh.addEventListener(
+    "click",
+    loadTrades
+  );
+
+  loadTrades();
+
 })();
