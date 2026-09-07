@@ -5,14 +5,19 @@ let trades = [];
 let currentSide = "ALL";
 let currentStatus = "ALL";
 
-document.addEventListener("DOMContentLoaded", () => {
 
-  loadTrades();
+// ========================================
+// INITIALIZE
+// ========================================
+
+document.addEventListener("DOMContentLoaded", () => {
 
   setupNavigation();
   setupFilters();
   setupRefresh();
   setupCloseTradeModal();
+
+  loadTrades();
 
 });
 
@@ -39,23 +44,28 @@ async function loadTrades() {
       refreshIcon.textContent = "⟳";
     }
 
-    const response = await fetch(
-      API_URL + "?t=" + Date.now(),
-      {
-        method: "GET",
+    setAPIStatus(null);
 
-        headers: {
-          Accept: "application/json"
-        },
+    const response =
+      await fetch(
+        API_URL + "?t=" + Date.now(),
+        {
+          method: "GET",
 
-        cache: "no-store"
-      }
-    );
+          headers: {
+            Accept: "application/json"
+          },
+
+          cache: "no-store"
+        }
+      );
 
     if (!response.ok) {
+
       throw new Error(
         "HTTP " + response.status
       );
+
     }
 
     const result =
@@ -67,9 +77,12 @@ async function loadTrades() {
     );
 
     if (!result.success) {
+
       throw new Error(
+        result.error ||
         "API returned success:false"
       );
+
     }
 
     trades =
@@ -107,6 +120,8 @@ async function loadTrades() {
       error
     );
 
+    setAPIStatus(false);
+
     showConnectionError();
 
   } finally {
@@ -131,11 +146,8 @@ async function loadTrades() {
 function renderAll() {
 
   renderDashboard();
-
   renderRecentTrades();
-
   renderJournal();
-
   renderAnalytics();
 
 }
@@ -152,35 +164,37 @@ function renderDashboard() {
 
   const open =
     trades.filter(
-      t =>
-        String(t.status)
+      trade =>
+        String(trade.status || "")
           .toUpperCase() === "OPEN"
     ).length;
 
   const closed =
     trades.filter(
-      t =>
-        String(t.status)
+      trade =>
+        String(trade.status || "")
           .toUpperCase() === "CLOSED"
     );
 
   const profit =
     trades.reduce(
-      (sum, t) =>
-        sum + Number(t.profit || 0),
+      (sum, trade) =>
+        sum +
+        Number(trade.profit || 0),
       0
     );
 
   const wins =
     closed.filter(
-      t =>
-        Number(t.profit || 0) > 0
+      trade =>
+        Number(trade.profit || 0) > 0
     ).length;
 
   const winRate =
     closed.length > 0
       ? (wins / closed.length) * 100
       : 0;
+
 
   setText(
     "statProfit",
@@ -203,6 +217,7 @@ function renderDashboard() {
     "statOpen",
     open
   );
+
 
   const profitStatus =
     document.getElementById(
@@ -262,6 +277,7 @@ function renderRecentTrades() {
     return;
   }
 
+
   if (trades.length === 0) {
 
     container.innerHTML = "";
@@ -271,11 +287,14 @@ function renderRecentTrades() {
     }
 
     return;
+
   }
+
 
   if (empty) {
     empty.style.display = "none";
   }
+
 
   container.innerHTML =
     trades
@@ -294,28 +313,45 @@ function renderRecentTrades() {
           <div class="trade-item">
 
             <div>
+
               <strong>
-                ${escapeHTML(trade.symbol)}
+                ${escapeHTML(
+                  trade.symbol
+                )}
               </strong>
 
               <span class="${side.toLowerCase()}">
                 ${escapeHTML(side)}
               </span>
+
             </div>
 
+
             <div>
+
               <strong>
-                ${formatPrice(trade.entry_price)}
+                ${formatPrice(
+                  trade.entry_price
+                )}
               </strong>
 
               <span>
                 ${escapeHTML(status)}
               </span>
+
             </div>
 
+
             <div>
-              <strong class="${getProfitClass(trade.profit)}">
-                ${formatMoney(trade.profit)}
+
+              <strong
+                class="${getProfitClass(
+                  trade.profit
+                )}"
+              >
+                ${formatMoney(
+                  trade.profit
+                )}
               </strong>
 
               <span>
@@ -324,6 +360,7 @@ function renderRecentTrades() {
                   trade.open_time
                 )}
               </span>
+
             </div>
 
           </div>
@@ -336,26 +373,35 @@ function renderRecentTrades() {
 
 
 // ========================================
-// JOURNAL FILTER
+// FILTERS
 // ========================================
 
 function getFilteredTrades() {
 
-  return trades.filter(trade => {
+  return trades.filter(
+    trade => {
 
-    const sideMatch =
-      currentSide === "ALL" ||
-      String(trade.side)
-        .toUpperCase() === currentSide;
+      const sideMatch =
+        currentSide === "ALL" ||
+        String(trade.side || "")
+          .toUpperCase() ===
+          currentSide;
 
-    const statusMatch =
-      currentStatus === "ALL" ||
-      String(trade.status)
-        .toUpperCase() === currentStatus;
 
-    return sideMatch && statusMatch;
+      const statusMatch =
+        currentStatus === "ALL" ||
+        String(trade.status || "")
+          .toUpperCase() ===
+          currentStatus;
 
-  });
+
+      return (
+        sideMatch &&
+        statusMatch
+      );
+
+    }
+  );
 
 }
 
@@ -368,7 +414,7 @@ function renderJournal() {
 
   const tableBody =
     document.getElementById(
-      "tradeTableBody"
+      "journalBody"
     );
 
   const cards =
@@ -383,6 +429,7 @@ function renderJournal() {
 
   const filtered =
     getFilteredTrades();
+
 
   if (resultCount) {
 
@@ -407,6 +454,7 @@ function renderJournal() {
 
       tableBody.innerHTML = `
         <tr>
+
           <td
             colspan="10"
             style="
@@ -416,6 +464,7 @@ function renderJournal() {
           >
             No trades found
           </td>
+
         </tr>
       `;
 
@@ -436,6 +485,7 @@ function renderJournal() {
             const isOpen =
               status === "OPEN";
 
+
             return `
               <tr>
 
@@ -447,13 +497,19 @@ function renderJournal() {
                   </strong>
                 </td>
 
+
                 <td>
+
                   <span
-                    class="${getSideBadgeClass(side)}"
+                    class="${getSideBadgeClass(
+                      side
+                    )}"
                   >
                     ${escapeHTML(side)}
                   </span>
+
                 </td>
+
 
                 <td>
                   ${Number(
@@ -461,11 +517,13 @@ function renderJournal() {
                   ).toFixed(2)}
                 </td>
 
+
                 <td>
                   ${formatPrice(
                     trade.entry_price
                   )}
                 </td>
+
 
                 <td>
                   ${formatPrice(
@@ -473,13 +531,16 @@ function renderJournal() {
                   )}
                 </td>
 
+
                 <td>
                   ${formatPrice(
                     trade.tp
                   )}
                 </td>
 
+
                 <td>
+
                   <span
                     class="${getProfitClass(
                       trade.profit
@@ -489,9 +550,12 @@ function renderJournal() {
                       trade.profit
                     )}
                   </span>
+
                 </td>
 
+
                 <td>
+
                   <span
                     class="${getStatusBadgeClass(
                       status
@@ -499,7 +563,9 @@ function renderJournal() {
                   >
                     ${escapeHTML(status)}
                   </span>
+
                 </td>
+
 
                 <td>
                   ${formatDate(
@@ -508,7 +574,9 @@ function renderJournal() {
                   )}
                 </td>
 
+
                 <td>
+
                   ${
                     isOpen
                       ? `
@@ -517,6 +585,7 @@ function renderJournal() {
                           data-close-id="${escapeHTML(
                             trade.id
                           )}"
+                          type="button"
                         >
                           Close
                         </button>
@@ -527,6 +596,7 @@ function renderJournal() {
                         </span>
                       `
                   }
+
                 </td>
 
               </tr>
@@ -571,12 +641,14 @@ function renderJournal() {
             const isOpen =
               status === "OPEN";
 
+
             return `
               <div class="glass mobile-trade">
 
                 <div class="mobile-trade-top">
 
                   <div>
+
                     <div class="mobile-symbol">
                       ${escapeHTML(
                         trade.symbol
@@ -584,11 +656,15 @@ function renderJournal() {
                     </div>
 
                     <span
-                      class="${getSideBadgeClass(side)}"
+                      class="${getSideBadgeClass(
+                        side
+                      )}"
                     >
                       ${escapeHTML(side)}
                     </span>
+
                   </div>
+
 
                   <strong
                     class="mobile-profit ${getProfitClass(
@@ -602,12 +678,11 @@ function renderJournal() {
 
                 </div>
 
+
                 <div class="mobile-meta">
 
                   <div>
-                    <span>
-                      ENTRY
-                    </span>
+                    <span>ENTRY</span>
 
                     <strong>
                       ${formatPrice(
@@ -616,10 +691,9 @@ function renderJournal() {
                     </strong>
                   </div>
 
+
                   <div>
-                    <span>
-                      SL
-                    </span>
+                    <span>SL</span>
 
                     <strong>
                       ${formatPrice(
@@ -628,10 +702,9 @@ function renderJournal() {
                     </strong>
                   </div>
 
+
                   <div>
-                    <span>
-                      TP
-                    </span>
+                    <span>TP</span>
 
                     <strong>
                       ${formatPrice(
@@ -640,10 +713,9 @@ function renderJournal() {
                     </strong>
                   </div>
 
+
                   <div>
-                    <span>
-                      VOLUME
-                    </span>
+                    <span>VOLUME</span>
 
                     <strong>
                       ${Number(
@@ -652,20 +724,18 @@ function renderJournal() {
                     </strong>
                   </div>
 
+
                   <div>
-                    <span>
-                      STATUS
-                    </span>
+                    <span>STATUS</span>
 
                     <strong>
                       ${escapeHTML(status)}
                     </strong>
                   </div>
 
+
                   <div>
-                    <span>
-                      TIME
-                    </span>
+                    <span>TIME</span>
 
                     <strong>
                       ${formatDate(
@@ -677,6 +747,7 @@ function renderJournal() {
 
                 </div>
 
+
                 ${
                   isOpen
                     ? `
@@ -687,6 +758,7 @@ function renderJournal() {
                           data-close-id="${escapeHTML(
                             trade.id
                           )}"
+                          type="button"
                         >
                           Close Trade
                         </button>
@@ -704,15 +776,69 @@ function renderJournal() {
 
     }
 
-    setupCloseButtons();
-
   }
+
+
+  setupCloseButtons();
 
 }
 
 
 // ========================================
-// CLOSE TRADE MODAL
+// CLOSE BUTTONS
+// ========================================
+
+function setupCloseButtons() {
+
+  document
+    .querySelectorAll(
+      "[data-close-id]"
+    )
+    .forEach(button => {
+
+      button.addEventListener(
+        "click",
+        () => {
+
+          const id =
+            String(
+              button.dataset.closeId
+            );
+
+
+          const trade =
+            trades.find(
+              item =>
+                String(item.id) === id
+            );
+
+
+          if (!trade) {
+
+            console.error(
+              "Trade not found:",
+              id
+            );
+
+            return;
+
+          }
+
+
+          openCloseTradeModal(
+            trade
+          );
+
+        }
+      );
+
+    });
+
+}
+
+
+// ========================================
+// CLOSE TRADE MODAL SETUP
 // ========================================
 
 function setupCloseTradeModal() {
@@ -736,6 +862,7 @@ function setupCloseTradeModal() {
     document.getElementById(
       "closeTradeForm"
     );
+
 
   if (!modal || !form) {
     return;
@@ -769,7 +896,9 @@ function setupCloseTradeModal() {
       if (
         event.target === modal
       ) {
+
         closeCloseTradeModal();
+
       }
 
     }
@@ -801,50 +930,9 @@ function setupCloseTradeModal() {
 }
 
 
-function setupCloseButtons() {
-
-  document
-    .querySelectorAll(
-      "[data-close-id]"
-    )
-    .forEach(button => {
-
-      button.addEventListener(
-        "click",
-        () => {
-
-          const id =
-            String(
-              button.dataset.closeId
-            );
-
-          const trade =
-            trades.find(
-              item =>
-                String(item.id) === id
-            );
-
-          if (!trade) {
-
-            console.error(
-              "Trade not found:",
-              id
-            );
-
-            return;
-          }
-
-          openCloseTradeModal(
-            trade
-          );
-
-        }
-      );
-
-    });
-
-}
-
+// ========================================
+// OPEN CLOSE MODAL
+// ========================================
 
 function openCloseTradeModal(
   trade
@@ -897,8 +985,7 @@ function openCloseTradeModal(
 
 
   if (idInput) {
-    idInput.value =
-      trade.id;
+    idInput.value = trade.id;
   }
 
 
@@ -946,6 +1033,7 @@ function openCloseTradeModal(
         trade.side || ""
       ).toUpperCase();
 
+
     info.innerHTML = `
       <strong>
         ${escapeHTML(
@@ -960,13 +1048,13 @@ function openCloseTradeModal(
         ${escapeHTML(
           trade.ticket || "—"
         )}
-        ·
-        Entry:
+
+        · Entry:
         ${formatPrice(
           trade.entry_price
         )}
-        ·
-        Volume:
+
+        · Volume:
         ${Number(
           trade.volume || 0
         ).toFixed(2)}
@@ -980,12 +1068,21 @@ function openCloseTradeModal(
     "active"
   );
 
+  modal.setAttribute(
+    "aria-hidden",
+    "false"
+  );
+
   document.body.classList.add(
     "modal-open"
   );
 
 }
 
+
+// ========================================
+// CLOSE MODAL
+// ========================================
 
 function closeCloseTradeModal() {
 
@@ -1009,6 +1106,11 @@ function closeCloseTradeModal() {
 
     modal.classList.remove(
       "active"
+    );
+
+    modal.setAttribute(
+      "aria-hidden",
+      "true"
     );
 
   }
@@ -1036,6 +1138,10 @@ function closeCloseTradeModal() {
 }
 
 
+// ========================================
+// SUBMIT CLOSE TRADE
+// ========================================
+
 async function handleCloseTradeSubmit(
   event
 ) {
@@ -1048,12 +1154,14 @@ async function handleCloseTradeSubmit(
       "closeTradeId"
     )?.value;
 
+
   const closePrice =
     Number(
       document.getElementById(
         "closePrice"
       )?.value
     );
+
 
   const profit =
     Number(
@@ -1062,6 +1170,7 @@ async function handleCloseTradeSubmit(
       )?.value
     );
 
+
   const swap =
     Number(
       document.getElementById(
@@ -1069,12 +1178,14 @@ async function handleCloseTradeSubmit(
       )?.value || 0
     );
 
+
   const commission =
     Number(
       document.getElementById(
         "closeCommission"
       )?.value || 0
     );
+
 
   const button =
     document.getElementById(
@@ -1090,6 +1201,7 @@ async function handleCloseTradeSubmit(
     );
 
     return;
+
   }
 
 
@@ -1101,6 +1213,7 @@ async function handleCloseTradeSubmit(
     );
 
     return;
+
   }
 
 
@@ -1112,6 +1225,31 @@ async function handleCloseTradeSubmit(
     );
 
     return;
+
+  }
+
+
+  if (!Number.isFinite(swap)) {
+
+    showModalMessage(
+      "Swap tidak valid.",
+      "error"
+    );
+
+    return;
+
+  }
+
+
+  if (!Number.isFinite(commission)) {
+
+    showModalMessage(
+      "Commission tidak valid.",
+      "error"
+    );
+
+    return;
+
   }
 
 
@@ -1127,93 +1265,4 @@ async function handleCloseTradeSubmit(
 
   try {
 
-    const response =
-      await fetch(
-        API_URL +
-        "/" +
-        encodeURIComponent(id) +
-        "/close",
-        {
-          method: "PATCH",
-
-          headers: {
-            "Content-Type":
-              "application/json",
-
-            Accept:
-              "application/json"
-          },
-
-          body:
-            JSON.stringify({
-              close_price:
-                closePrice,
-
-              profit:
-                profit,
-
-              swap:
-                swap,
-
-              commission:
-                commission
-            })
-        }
-      );
-
-
-    const result =
-      await response.json()
-        .catch(() => null);
-
-
-    if (!response.ok) {
-
-      throw new Error(
-        result?.error ||
-        "HTTP " +
-        response.status
-      );
-
-    }
-
-
-    if (
-      result &&
-      result.success === false
-    ) {
-
-      throw new Error(
-        result.error ||
-        "Trade gagal ditutup."
-      );
-
-    }
-
-
-    showModalMessage(
-      "Trade berhasil ditutup. Memperbarui data...",
-      "success"
-    );
-
-
-    await loadTrades();
-
-
-    setTimeout(
-      () => {
-        closeCloseTradeModal();
-      },
-      500
-    );
-
-
-  } catch (error) {
-
-    console.error(
-      "Close trade error:",
-      error
-    );
-
-    showModalMessage(
-    
+    const respon
