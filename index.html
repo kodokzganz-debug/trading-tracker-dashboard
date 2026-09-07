@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Trading Tracker — Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ===== Header ===== -->
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand__mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M3 17L9.5 10.5L14 15L21 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M15 7H21V13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </span>
+      <div class="brand__text">
+        <span class="brand__title">Trading Tracker</span>
+        <span class="brand__subtitle" id="lastUpdated">Belum pernah dimuat</span>
+      </div>
+    </div>
+    <button class="btn btn--refresh" id="refreshBtn" type="button">
+      <svg class="icon icon--refresh" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M20 11A8 8 0 1 0 18.5 15.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M20 5V11H14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span>Segarkan</span>
+    </button>
+  </header>
+
+  <!-- ===== Stat cards ===== -->
+  <section class="stats" aria-label="Ringkasan statistik">
+    <div class="stat-card stat-card--neutral">
+      <span class="stat-card__label">Total Trades</span>
+      <span class="stat-card__value" id="statTotal">–</span>
+    </div>
+    <div class="stat-card stat-card--warn">
+      <span class="stat-card__label">Open Trades</span>
+      <span class="stat-card__value" id="statOpen">–</span>
+    </div>
+    <div class="stat-card" id="profitCard">
+      <span class="stat-card__label">Total Profit</span>
+      <span class="stat-card__value" id="statProfit">–</span>
+    </div>
+    <div class="stat-card stat-card--accent">
+      <span class="stat-card__label">Win Rate</span>
+      <span class="stat-card__value" id="statWinRate">–</span>
+    </div>
+  </section>
+
+  <!-- ===== Filters ===== -->
+  <section class="filters" aria-label="Filter data trade">
+    <div class="filter-group">
+      <span class="filter-group__label">Posisi</span>
+      <div class="pill-group" id="sideFilter" role="group">
+        <button class="pill is-active" data-value="ALL" type="button">Semua</button>
+        <button class="pill" data-value="BUY" type="button">Buy</button>
+        <button class="pill" data-value="SELL" type="button">Sell</button>
+      </div>
+    </div>
+    <div class="filter-group">
+      <span class="filter-group__label">Status</span>
+      <div class="pill-group" id="statusFilter" role="group">
+        <button class="pill is-active" data-value="ALL" type="button">Semua</button>
+        <button class="pill" data-value="OPEN" type="button">Terbuka</button>
+        <button class="pill" data-value="CLOSED" type="button">Tertutup</button>
+      </div>
+    </div>
+    <span class="filters__count" id="resultCount"></span>
+  </section>
+
+  <!-- ===== Content states ===== -->
+  <main class="content">
+
+    <div class="state state--loading" id="loadingState">
+      <span class="spinner" aria-hidden="true"></span>
+      <p>Memuat data trading…</p>
+    </div>
+
+    <div class="state state--error" id="errorState" hidden>
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="state__icon">
+        <path d="M12 9V13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <path d="M12 16.5V17" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+      </svg>
+      <p class="state__title">Gagal memuat data</p>
+      <p class="state__desc" id="errorDesc">Periksa koneksi internet Anda lalu coba lagi.</p>
+      <button class="btn btn--retry" id="retryBtn" type="button">Coba Lagi</button>
+    </div>
+
+    <div class="state state--empty" id="emptyState" hidden>
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="state__icon">
+        <rect x="3" y="4" width="18" height="16" rx="2" stroke="currentColor" stroke-width="2"/>
+        <path d="M3 9H21" stroke="currentColor" stroke-width="2"/>
+        <path d="M8 14H16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+      <p class="state__title" id="emptyTitle">Belum ada data trading</p>
+      <p class="state__desc" id="emptyDesc">Data akan muncul di sini setelah trade tercatat.</p>
+    </div>
+
+    <!-- Desktop table -->
+    <div class="table-wrap" id="tableWrap" hidden>
+      <table class="trade-table">
+        <thead>
+          <tr>
+            <th>Ticket</th>
+            <th>Symbol</th>
+            <th>Side</th>
+            <th>Volume</th>
+            <th>Entry</th>
+            <th>SL</th>
+            <th>TP</th>
+            <th>Profit</th>
+            <th>Status</th>
+            <th>Open Time</th>
+          </tr>
+        </thead>
+        <tbody id="tradeTableBody"></tbody>
+      </table>
+    </div>
+
+    <!-- Mobile card list -->
+    <div class="trade-cards" id="tradeCards" hidden></div>
+
+  </main>
+
+</div>
+
+<script src="script.js" defer></script>
+</body>
+</html>
