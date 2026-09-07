@@ -8,7 +8,11 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap"
+    rel="stylesheet"
+  >
 
   <link rel="stylesheet" href="style.css">
 </head>
@@ -26,6 +30,7 @@
 
     <div class="logo">
       <div class="logo-mark">↗</div>
+
       <div>
         <strong>TRADING</strong>
         <span>TRACKER</span>
@@ -33,6 +38,7 @@
     </div>
 
     <nav class="nav">
+
       <button class="nav-item active" data-page="dashboard">
         <span>⌂</span>
         Dashboard
@@ -52,6 +58,7 @@
         <span>⚙</span>
         Settings
       </button>
+
     </nav>
 
     <div class="sidebar-footer">
@@ -83,21 +90,28 @@
     <section class="page active" id="dashboardPage">
 
       <div class="welcome">
+
         <div>
           <p class="eyebrow">OVERVIEW</p>
+
           <h2>Your trading performance.</h2>
-          <p class="muted">Pantau hasil trading lu dalam satu workspace.</p>
+
+          <p class="muted">
+            Pantau hasil trading lu dalam satu workspace.
+          </p>
         </div>
 
         <div class="updated" id="lastUpdated">
           Belum diperbarui
         </div>
+
       </div>
 
       <!-- Stats -->
       <section class="stats">
 
         <article class="glass stat-card hero-stat">
+
           <div class="stat-label">
             TOTAL PROFIT
             <span class="stat-icon">↗</span>
@@ -106,28 +120,61 @@
           <div class="stat-value" id="statProfit">–</div>
 
           <div class="stat-footer">
-            <span class="positive" id="profitStatus">Net performance</span>
+            <span class="positive" id="profitStatus">
+              Net performance
+            </span>
           </div>
+
         </article>
 
         <article class="glass stat-card">
-          <div class="stat-label">TOTAL TRADES</div>
-          <div class="stat-value" id="statTotal">–</div>
-          <div class="stat-footer">All recorded trades</div>
-        </article>
 
-        <article class="glass stat-card">
-          <div class="stat-label">WIN RATE</div>
-          <div class="stat-value" id="statWinRate">–</div>
-          <div class="stat-footer">Closed positions</div>
-        </article>
+          <div class="stat-label">
+            TOTAL TRADES
+          </div>
 
-        <article class="glass stat-card">
-          <div class="stat-label">OPEN TRADES</div>
-          <div class="stat-value" id="statOpen">–</div>
+          <div class="stat-value" id="statTotal">
+            –
+          </div>
+
           <div class="stat-footer">
-            <span class="warning">Currently active</span>
+            All recorded trades
           </div>
+
+        </article>
+
+        <article class="glass stat-card">
+
+          <div class="stat-label">
+            WIN RATE
+          </div>
+
+          <div class="stat-value" id="statWinRate">
+            –
+          </div>
+
+          <div class="stat-footer">
+            Closed positions
+          </div>
+
+        </article>
+
+        <article class="glass stat-card">
+
+          <div class="stat-label">
+            OPEN TRADES
+          </div>
+
+          <div class="stat-value" id="statOpen">
+            –
+          </div>
+
+          <div class="stat-footer">
+            <span class="warning">
+              Currently active
+            </span>
+          </div>
+
         </article>
 
       </section>
@@ -136,20 +183,32 @@
       <section class="glass performance">
 
         <div class="section-head">
+
           <div>
             <p class="eyebrow">PERFORMANCE</p>
             <h3>Trading activity</h3>
           </div>
 
-          <div class="period">ALL TIME</div>
+          <div class="period">
+            ALL TIME
+          </div>
+
         </div>
 
         <div class="chart" id="chart">
+
           <div class="chart-empty">
             <span>↗</span>
-            <p>Performance chart</p>
-            <small>Data akan divisualisasikan dari trade history.</small>
+
+            <p>
+              Performance chart
+            </p>
+
+            <small>
+              Data akan divisualisasikan dari trade history.
+            </small>
           </div>
+
         </div>
 
       </section>
@@ -158,19 +217,30 @@
       <section class="glass recent">
 
         <div class="section-head">
+
           <div>
             <p class="eyebrow">ACTIVITY</p>
             <h3>Recent trades</h3>
           </div>
 
-          <button class="text-btn" data-page-target="journal">
+          <button
+            class="text-btn"
+            data-page-target="journal"
+          >
             View journal →
           </button>
+
         </div>
 
-        <div class="trade-list" id="recentTrades"></div>
+        <div
+          class="trade-list"
+          id="recentTrades"
+        ></div>
 
-        <div class="empty" id="emptyRecent">
+        <div
+          class="empty"
+          id="emptyRecent"
+        >
           Belum ada trade.
         </div>
 
@@ -182,34 +252,91 @@
     <section class="page" id="journalPage">
 
       <div class="page-intro">
-        <p class="eyebrow">TRADE JOURNAL</p>
-        <h2>Every trade tells a story.</h2>
-        <p class="muted">Review semua posisi yang sudah tercatat.</p>
+
+        <p class="eyebrow">
+          TRADE JOURNAL
+        </p>
+
+        <h2>
+          Every trade tells a story.
+        </h2>
+
+        <p class="muted">
+          Review semua posisi yang sudah tercatat.
+        </p>
+
       </div>
 
       <div class="glass filters">
 
         <div class="filter-block">
+
           <span>POSITION</span>
 
           <div class="pills" id="sideFilter">
-            <button class="pill active" data-value="ALL">All</button>
-            <button class="pill" data-value="BUY">Buy</button>
-            <button class="pill" data-value="SELL">Sell</button>
+
+            <button
+              class="pill active"
+              data-value="ALL"
+            >
+              All
+            </button>
+
+            <button
+              class="pill"
+              data-value="BUY"
+            >
+              Buy
+            </button>
+
+            <button
+              class="pill"
+              data-value="SELL"
+            >
+              Sell
+            </button>
+
           </div>
+
         </div>
 
         <div class="filter-block">
+
           <span>STATUS</span>
 
           <div class="pills" id="statusFilter">
-            <button class="pill active" data-value="ALL">All</button>
-            <button class="pill" data-value="OPEN">Open</button>
-            <button class="pill" data-value="CLOSED">Closed</button>
+
+            <button
+              class="pill active"
+              data-value="ALL"
+            >
+              All
+            </button>
+
+            <button
+              class="pill"
+              data-value="OPEN"
+            >
+              Open
+            </button>
+
+            <button
+              class="pill"
+              data-value="CLOSED"
+            >
+              Closed
+            </button>
+
           </div>
+
         </div>
 
-        <div class="trade-count" id="resultCount">0 trades</div>
+        <div
+          class="trade-count"
+          id="resultCount"
+        >
+          0 trades
+        </div>
 
       </div>
 
@@ -218,7 +345,9 @@
         <div class="table-scroll">
 
           <table>
+
             <thead>
+
               <tr>
                 <th>SYMBOL</th>
                 <th>SIDE</th>
@@ -229,122 +358,5 @@
                 <th>PROFIT</th>
                 <th>STATUS</th>
                 <th>TIME</th>
+                <th>ACTION</th>
               </tr>
-            </thead>
-
-            <tbody id="tradeTableBody"></tbody>
-          </table>
-
-        </div>
-
-        <div class="mobile-trades" id="tradeCards"></div>
-
-      </div>
-
-    </section>
-
-    <!-- Analytics -->
-    <section class="page" id="analyticsPage">
-
-      <div class="page-intro">
-        <p class="eyebrow">ANALYTICS</p>
-        <h2>Know your edge.</h2>
-        <p class="muted">Statistik yang membantu lu memahami performa.</p>
-      </div>
-
-      <div class="analytics-grid">
-
-        <div class="glass analytics-card">
-          <span>WIN RATE</span>
-          <strong id="analyticsWin">–</strong>
-          <small>Closed trades</small>
-        </div>
-
-        <div class="glass analytics-card">
-          <span>PROFIT</span>
-          <strong id="analyticsProfit">–</strong>
-          <small>Net P&L</small>
-        </div>
-
-        <div class="glass analytics-card">
-          <span>TRADES</span>
-          <strong id="analyticsTrades">–</strong>
-          <small>Total positions</small>
-        </div>
-
-        <div class="glass analytics-card">
-          <span>OPEN</span>
-          <strong id="analyticsOpen">–</strong>
-          <small>Active positions</small>
-        </div>
-
-      </div>
-
-    </section>
-
-    <!-- Settings -->
-    <section class="page" id="settingsPage">
-
-      <div class="page-intro">
-        <p class="eyebrow">SETTINGS</p>
-        <h2>Workspace settings.</h2>
-        <p class="muted">Konfigurasi dashboard lu.</p>
-      </div>
-
-      <div class="glass settings-card">
-
-        <div class="setting">
-          <div>
-            <strong>API Endpoint</strong>
-            <p>Cloudflare Worker</p>
-          </div>
-
-          <span class="connected">CONNECTED</span>
-        </div>
-
-        <div class="setting">
-          <div>
-            <strong>Database</strong>
-            <p>Cloudflare D1</p>
-          </div>
-
-          <span class="connected">ACTIVE</span>
-        </div>
-
-      </div>
-
-    </section>
-
-  </main>
-
-  <!-- Mobile navigation -->
-  <nav class="mobile-nav">
-
-    <button class="nav-item active" data-page="dashboard">
-      <span>⌂</span>
-      <small>Home</small>
-    </button>
-
-    <button class="nav-item" data-page="journal">
-      <span>◫</span>
-      <small>Journal</small>
-    </button>
-
-    <button class="nav-item" data-page="analytics">
-      <span>◌</span>
-      <small>Stats</small>
-    </button>
-
-    <button class="nav-item" data-page="settings">
-      <span>⚙</span>
-      <small>Settings</small>
-    </button>
-
-  </nav>
-
-</div>
-
-<script src="script.js" defer></script>
-
-</body>
-            </html>
