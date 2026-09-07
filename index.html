@@ -1,139 +1,350 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Trading Tracker — Dashboard</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+
+  <title>Trading Tracker</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
 
-<div class="app">
+<div class="app-shell">
 
-  <!-- ===== Header ===== -->
-  <header class="topbar">
-    <div class="brand">
-      <span class="brand__mark" aria-hidden="true">
-        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M3 17L9.5 10.5L14 15L21 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          <path d="M15 7H21V13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </span>
-      <div class="brand__text">
-        <span class="brand__title">Trading Tracker</span>
-        <span class="brand__subtitle" id="lastUpdated">Belum pernah dimuat</span>
+  <!-- Ambient background -->
+  <div class="ambient ambient--one"></div>
+  <div class="ambient ambient--two"></div>
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+
+    <div class="logo">
+      <div class="logo-mark">↗</div>
+      <div>
+        <strong>TRADING</strong>
+        <span>TRACKER</span>
       </div>
     </div>
-    <button class="btn btn--refresh" id="refreshBtn" type="button">
-      <svg class="icon icon--refresh" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M20 11A8 8 0 1 0 18.5 15.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        <path d="M20 5V11H14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-      <span>Segarkan</span>
-    </button>
-  </header>
 
-  <!-- ===== Stat cards ===== -->
-  <section class="stats" aria-label="Ringkasan statistik">
-    <div class="stat-card stat-card--neutral">
-      <span class="stat-card__label">Total Trades</span>
-      <span class="stat-card__value" id="statTotal">–</span>
-    </div>
-    <div class="stat-card stat-card--warn">
-      <span class="stat-card__label">Open Trades</span>
-      <span class="stat-card__value" id="statOpen">–</span>
-    </div>
-    <div class="stat-card" id="profitCard">
-      <span class="stat-card__label">Total Profit</span>
-      <span class="stat-card__value" id="statProfit">–</span>
-    </div>
-    <div class="stat-card stat-card--accent">
-      <span class="stat-card__label">Win Rate</span>
-      <span class="stat-card__value" id="statWinRate">–</span>
-    </div>
-  </section>
+    <nav class="nav">
+      <button class="nav-item active" data-page="dashboard">
+        <span>⌂</span>
+        Dashboard
+      </button>
 
-  <!-- ===== Filters ===== -->
-  <section class="filters" aria-label="Filter data trade">
-    <div class="filter-group">
-      <span class="filter-group__label">Posisi</span>
-      <div class="pill-group" id="sideFilter" role="group">
-        <button class="pill is-active" data-value="ALL" type="button">Semua</button>
-        <button class="pill" data-value="BUY" type="button">Buy</button>
-        <button class="pill" data-value="SELL" type="button">Sell</button>
+      <button class="nav-item" data-page="journal">
+        <span>◫</span>
+        Journal
+      </button>
+
+      <button class="nav-item" data-page="analytics">
+        <span>◌</span>
+        Analytics
+      </button>
+
+      <button class="nav-item" data-page="settings">
+        <span>⚙</span>
+        Settings
+      </button>
+    </nav>
+
+    <div class="sidebar-footer">
+      <span class="status-dot"></span>
+      API Connected
+    </div>
+
+  </aside>
+
+  <!-- Main -->
+  <main class="main">
+
+    <!-- Topbar -->
+    <header class="topbar">
+
+      <div>
+        <div class="eyebrow">TRADING WORKSPACE</div>
+        <h1 id="pageTitle">Dashboard</h1>
       </div>
-    </div>
-    <div class="filter-group">
-      <span class="filter-group__label">Status</span>
-      <div class="pill-group" id="statusFilter" role="group">
-        <button class="pill is-active" data-value="ALL" type="button">Semua</button>
-        <button class="pill" data-value="OPEN" type="button">Terbuka</button>
-        <button class="pill" data-value="CLOSED" type="button">Tertutup</button>
+
+      <button class="refresh-btn" id="refreshBtn">
+        <span id="refreshIcon">↻</span>
+        Refresh
+      </button>
+
+    </header>
+
+    <!-- Dashboard -->
+    <section class="page active" id="dashboardPage">
+
+      <div class="welcome">
+        <div>
+          <p class="eyebrow">OVERVIEW</p>
+          <h2>Your trading performance.</h2>
+          <p class="muted">Pantau hasil trading lu dalam satu workspace.</p>
+        </div>
+
+        <div class="updated" id="lastUpdated">
+          Belum diperbarui
+        </div>
       </div>
-    </div>
-    <span class="filters__count" id="resultCount"></span>
-  </section>
 
-  <!-- ===== Content states ===== -->
-  <main class="content">
+      <!-- Stats -->
+      <section class="stats">
 
-    <div class="state state--loading" id="loadingState">
-      <span class="spinner" aria-hidden="true"></span>
-      <p>Memuat data trading…</p>
-    </div>
+        <article class="glass stat-card hero-stat">
+          <div class="stat-label">
+            TOTAL PROFIT
+            <span class="stat-icon">↗</span>
+          </div>
 
-    <div class="state state--error" id="errorState" hidden>
-      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="state__icon">
-        <path d="M12 9V13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-        <path d="M12 16.5V17" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-      </svg>
-      <p class="state__title">Gagal memuat data</p>
-      <p class="state__desc" id="errorDesc">Periksa koneksi internet Anda lalu coba lagi.</p>
-      <button class="btn btn--retry" id="retryBtn" type="button">Coba Lagi</button>
-    </div>
+          <div class="stat-value" id="statProfit">–</div>
 
-    <div class="state state--empty" id="emptyState" hidden>
-      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="state__icon">
-        <rect x="3" y="4" width="18" height="16" rx="2" stroke="currentColor" stroke-width="2"/>
-        <path d="M3 9H21" stroke="currentColor" stroke-width="2"/>
-        <path d="M8 14H16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-      </svg>
-      <p class="state__title" id="emptyTitle">Belum ada data trading</p>
-      <p class="state__desc" id="emptyDesc">Data akan muncul di sini setelah trade tercatat.</p>
-    </div>
+          <div class="stat-footer">
+            <span class="positive" id="profitStatus">Net performance</span>
+          </div>
+        </article>
 
-    <!-- Desktop table -->
-    <div class="table-wrap" id="tableWrap" hidden>
-      <table class="trade-table">
-        <thead>
-          <tr>
-            <th>Ticket</th>
-            <th>Symbol</th>
-            <th>Side</th>
-            <th>Volume</th>
-            <th>Entry</th>
-            <th>SL</th>
-            <th>TP</th>
-            <th>Profit</th>
-            <th>Status</th>
-            <th>Open Time</th>
-          </tr>
-        </thead>
-        <tbody id="tradeTableBody"></tbody>
-      </table>
-    </div>
+        <article class="glass stat-card">
+          <div class="stat-label">TOTAL TRADES</div>
+          <div class="stat-value" id="statTotal">–</div>
+          <div class="stat-footer">All recorded trades</div>
+        </article>
 
-    <!-- Mobile card list -->
-    <div class="trade-cards" id="tradeCards" hidden></div>
+        <article class="glass stat-card">
+          <div class="stat-label">WIN RATE</div>
+          <div class="stat-value" id="statWinRate">–</div>
+          <div class="stat-footer">Closed positions</div>
+        </article>
+
+        <article class="glass stat-card">
+          <div class="stat-label">OPEN TRADES</div>
+          <div class="stat-value" id="statOpen">–</div>
+          <div class="stat-footer">
+            <span class="warning">Currently active</span>
+          </div>
+        </article>
+
+      </section>
+
+      <!-- Performance -->
+      <section class="glass performance">
+
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">PERFORMANCE</p>
+            <h3>Trading activity</h3>
+          </div>
+
+          <div class="period">ALL TIME</div>
+        </div>
+
+        <div class="chart" id="chart">
+          <div class="chart-empty">
+            <span>↗</span>
+            <p>Performance chart</p>
+            <small>Data akan divisualisasikan dari trade history.</small>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- Recent trades -->
+      <section class="glass recent">
+
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">ACTIVITY</p>
+            <h3>Recent trades</h3>
+          </div>
+
+          <button class="text-btn" data-page-target="journal">
+            View journal →
+          </button>
+        </div>
+
+        <div class="trade-list" id="recentTrades"></div>
+
+        <div class="empty" id="emptyRecent">
+          Belum ada trade.
+        </div>
+
+      </section>
+
+    </section>
+
+    <!-- Journal -->
+    <section class="page" id="journalPage">
+
+      <div class="page-intro">
+        <p class="eyebrow">TRADE JOURNAL</p>
+        <h2>Every trade tells a story.</h2>
+        <p class="muted">Review semua posisi yang sudah tercatat.</p>
+      </div>
+
+      <div class="glass filters">
+
+        <div class="filter-block">
+          <span>POSITION</span>
+
+          <div class="pills" id="sideFilter">
+            <button class="pill active" data-value="ALL">All</button>
+            <button class="pill" data-value="BUY">Buy</button>
+            <button class="pill" data-value="SELL">Sell</button>
+          </div>
+        </div>
+
+        <div class="filter-block">
+          <span>STATUS</span>
+
+          <div class="pills" id="statusFilter">
+            <button class="pill active" data-value="ALL">All</button>
+            <button class="pill" data-value="OPEN">Open</button>
+            <button class="pill" data-value="CLOSED">Closed</button>
+          </div>
+        </div>
+
+        <div class="trade-count" id="resultCount">0 trades</div>
+
+      </div>
+
+      <div class="glass journal-table">
+
+        <div class="table-scroll">
+
+          <table>
+            <thead>
+              <tr>
+                <th>SYMBOL</th>
+                <th>SIDE</th>
+                <th>VOLUME</th>
+                <th>ENTRY</th>
+                <th>SL</th>
+                <th>TP</th>
+                <th>PROFIT</th>
+                <th>STATUS</th>
+                <th>TIME</th>
+              </tr>
+            </thead>
+
+            <tbody id="tradeTableBody"></tbody>
+          </table>
+
+        </div>
+
+        <div class="mobile-trades" id="tradeCards"></div>
+
+      </div>
+
+    </section>
+
+    <!-- Analytics -->
+    <section class="page" id="analyticsPage">
+
+      <div class="page-intro">
+        <p class="eyebrow">ANALYTICS</p>
+        <h2>Know your edge.</h2>
+        <p class="muted">Statistik yang membantu lu memahami performa.</p>
+      </div>
+
+      <div class="analytics-grid">
+
+        <div class="glass analytics-card">
+          <span>WIN RATE</span>
+          <strong id="analyticsWin">–</strong>
+          <small>Closed trades</small>
+        </div>
+
+        <div class="glass analytics-card">
+          <span>PROFIT</span>
+          <strong id="analyticsProfit">–</strong>
+          <small>Net P&L</small>
+        </div>
+
+        <div class="glass analytics-card">
+          <span>TRADES</span>
+          <strong id="analyticsTrades">–</strong>
+          <small>Total positions</small>
+        </div>
+
+        <div class="glass analytics-card">
+          <span>OPEN</span>
+          <strong id="analyticsOpen">–</strong>
+          <small>Active positions</small>
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- Settings -->
+    <section class="page" id="settingsPage">
+
+      <div class="page-intro">
+        <p class="eyebrow">SETTINGS</p>
+        <h2>Workspace settings.</h2>
+        <p class="muted">Konfigurasi dashboard lu.</p>
+      </div>
+
+      <div class="glass settings-card">
+
+        <div class="setting">
+          <div>
+            <strong>API Endpoint</strong>
+            <p>Cloudflare Worker</p>
+          </div>
+
+          <span class="connected">CONNECTED</span>
+        </div>
+
+        <div class="setting">
+          <div>
+            <strong>Database</strong>
+            <p>Cloudflare D1</p>
+          </div>
+
+          <span class="connected">ACTIVE</span>
+        </div>
+
+      </div>
+
+    </section>
 
   </main>
+
+  <!-- Mobile navigation -->
+  <nav class="mobile-nav">
+
+    <button class="nav-item active" data-page="dashboard">
+      <span>⌂</span>
+      <small>Home</small>
+    </button>
+
+    <button class="nav-item" data-page="journal">
+      <span>◫</span>
+      <small>Journal</small>
+    </button>
+
+    <button class="nav-item" data-page="analytics">
+      <span>◌</span>
+      <small>Stats</small>
+    </button>
+
+    <button class="nav-item" data-page="settings">
+      <span>⚙</span>
+      <small>Settings</small>
+    </button>
+
+  </nav>
 
 </div>
 
 <script src="script.js" defer></script>
+
 </body>
-</html>
+            </html>
