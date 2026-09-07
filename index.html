@@ -21,11 +21,10 @@
 
 <div class="app-shell">
 
-  <!-- Ambient background -->
   <div class="ambient ambient--one"></div>
   <div class="ambient ambient--two"></div>
 
-  <!-- Sidebar -->
+  <!-- SIDEBAR -->
   <aside class="sidebar">
 
     <div class="logo">
@@ -68,10 +67,11 @@
 
   </aside>
 
-  <!-- Main -->
+
+  <!-- MAIN -->
   <main class="main">
 
-    <!-- Topbar -->
+    <!-- TOPBAR -->
     <header class="topbar">
 
       <div>
@@ -79,14 +79,16 @@
         <h1 id="pageTitle">Dashboard</h1>
       </div>
 
-      <button class="refresh-btn" id="refreshBtn">
+      <button class="refresh-btn" id="refreshBtn" type="button">
         <span id="refreshIcon">↻</span>
         Refresh
       </button>
 
     </header>
 
-    <!-- Dashboard -->
+
+    <!-- ================= DASHBOARD ================= -->
+
     <section class="page active" id="dashboardPage">
 
       <div class="welcome">
@@ -107,7 +109,9 @@
 
       </div>
 
-      <!-- Stats -->
+
+      <!-- STATS -->
+
       <section class="stats">
 
         <article class="glass stat-card hero-stat">
@@ -117,7 +121,9 @@
             <span class="stat-icon">↗</span>
           </div>
 
-          <div class="stat-value" id="statProfit">–</div>
+          <div class="stat-value" id="statProfit">
+            –
+          </div>
 
           <div class="stat-footer">
             <span class="positive" id="profitStatus">
@@ -126,6 +132,7 @@
           </div>
 
         </article>
+
 
         <article class="glass stat-card">
 
@@ -143,6 +150,7 @@
 
         </article>
 
+
         <article class="glass stat-card">
 
           <div class="stat-label">
@@ -158,6 +166,7 @@
           </div>
 
         </article>
+
 
         <article class="glass stat-card">
 
@@ -179,7 +188,9 @@
 
       </section>
 
-      <!-- Performance -->
+
+      <!-- PERFORMANCE -->
+
       <section class="glass performance">
 
         <div class="section-head">
@@ -198,6 +209,7 @@
         <div class="chart" id="chart">
 
           <div class="chart-empty">
+
             <span>↗</span>
 
             <p>
@@ -207,13 +219,16 @@
             <small>
               Data akan divisualisasikan dari trade history.
             </small>
+
           </div>
 
         </div>
 
       </section>
 
-      <!-- Recent trades -->
+
+      <!-- RECENT TRADES -->
+
       <section class="glass recent">
 
         <div class="section-head">
@@ -226,16 +241,19 @@
           <button
             class="text-btn"
             data-page-target="journal"
+            type="button"
           >
             View journal →
           </button>
 
         </div>
 
+
         <div
           class="trade-list"
           id="recentTrades"
         ></div>
+
 
         <div
           class="empty"
@@ -248,7 +266,10 @@
 
     </section>
 
-    <!-- Journal -->
+
+
+    <!-- ================= JOURNAL ================= -->
+
     <section class="page" id="journalPage">
 
       <div class="page-intro">
@@ -267,6 +288,9 @@
 
       </div>
 
+
+      <!-- FILTERS -->
+
       <div class="glass filters">
 
         <div class="filter-block">
@@ -278,6 +302,7 @@
             <button
               class="pill active"
               data-value="ALL"
+              type="button"
             >
               All
             </button>
@@ -285,6 +310,7 @@
             <button
               class="pill"
               data-value="BUY"
+              type="button"
             >
               Buy
             </button>
@@ -292,6 +318,7 @@
             <button
               class="pill"
               data-value="SELL"
+              type="button"
             >
               Sell
             </button>
@@ -299,6 +326,7 @@
           </div>
 
         </div>
+
 
         <div class="filter-block">
 
@@ -309,6 +337,7 @@
             <button
               class="pill active"
               data-value="ALL"
+              type="button"
             >
               All
             </button>
@@ -316,6 +345,7 @@
             <button
               class="pill"
               data-value="OPEN"
+              type="button"
             >
               Open
             </button>
@@ -323,6 +353,7 @@
             <button
               class="pill"
               data-value="CLOSED"
+              type="button"
             >
               Closed
             </button>
@@ -330,6 +361,7 @@
           </div>
 
         </div>
+
 
         <div
           class="trade-count"
@@ -340,6 +372,9 @@
 
       </div>
 
+
+      <!-- JOURNAL TABLE -->
+
       <div class="glass journal-table">
 
         <div class="table-scroll">
@@ -349,6 +384,7 @@
             <thead>
 
               <tr>
+
                 <th>SYMBOL</th>
                 <th>SIDE</th>
                 <th>VOLUME</th>
@@ -359,4 +395,410 @@
                 <th>STATUS</th>
                 <th>TIME</th>
                 <th>ACTION</th>
+
               </tr>
+
+            </thead>
+
+
+            <tbody id="journalBody">
+              <!-- Data dari API -->
+            </tbody>
+
+          </table>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+
+    <!-- ================= ANALYTICS ================= -->
+
+    <section class="page" id="analyticsPage">
+
+      <div class="page-intro">
+
+        <p class="eyebrow">
+          ANALYTICS
+        </p>
+
+        <h2>
+          Understand your edge.
+        </h2>
+
+        <p class="muted">
+          Analisis performa trading berdasarkan trade yang sudah ditutup.
+        </p>
+
+      </div>
+
+
+      <section class="stats">
+
+        <article class="glass stat-card">
+
+          <div class="stat-label">
+            WINNING TRADES
+          </div>
+
+          <div
+            class="stat-value"
+            id="analyticsWins"
+          >
+            –
+          </div>
+
+          <div class="stat-footer">
+            Closed positions in profit
+          </div>
+
+        </article>
+
+
+        <article class="glass stat-card">
+
+          <div class="stat-label">
+            LOSING TRADES
+          </div>
+
+          <div
+            class="stat-value"
+            id="analyticsLosses"
+          >
+            –
+          </div>
+
+          <div class="stat-footer">
+            Closed positions in loss
+          </div>
+
+        </article>
+
+
+        <article class="glass stat-card">
+
+          <div class="stat-label">
+            AVERAGE PROFIT
+          </div>
+
+          <div
+            class="stat-value"
+            id="analyticsAvgWin"
+          >
+            –
+          </div>
+
+          <div class="stat-footer">
+            Average winning trade
+          </div>
+
+        </article>
+
+
+        <article class="glass stat-card">
+
+          <div class="stat-label">
+            AVERAGE LOSS
+          </div>
+
+          <div
+            class="stat-value"
+            id="analyticsAvgLoss"
+          >
+            –
+          </div>
+
+          <div class="stat-footer">
+            Average losing trade
+          </div>
+
+        </article>
+
+      </section>
+
+
+      <section class="glass analytics-panel">
+
+        <div class="section-head">
+
+          <div>
+            <p class="eyebrow">
+              BREAKDOWN
+            </p>
+
+            <h3>
+              Performance summary
+            </h3>
+          </div>
+
+        </div>
+
+
+        <div
+          class="analytics-summary"
+          id="analyticsSummary"
+        >
+
+          <div class="analytics-row">
+            <span>Profit Factor</span>
+            <strong id="analyticsProfitFactor">–</strong>
+          </div>
+
+          <div class="analytics-row">
+            <span>Best Trade</span>
+            <strong id="analyticsBest">–</strong>
+          </div>
+
+          <div class="analytics-row">
+            <span>Worst Trade</span>
+            <strong id="analyticsWorst">–</strong>
+          </div>
+
+        </div>
+
+      </section>
+
+    </section>
+
+
+
+    <!-- ================= SETTINGS ================= -->
+
+    <section class="page" id="settingsPage">
+
+      <div class="page-intro">
+
+        <p class="eyebrow">
+          SETTINGS
+        </p>
+
+        <h2>
+          Workspace settings.
+        </h2>
+
+        <p class="muted">
+          Informasi konfigurasi Trading Tracker.
+        </p>
+
+      </div>
+
+
+      <section class="glass settings-panel">
+
+        <div class="setting-row">
+
+          <div>
+            <span class="setting-title">
+              API Endpoint
+            </span>
+
+            <span class="setting-description">
+              Cloudflare Worker API
+            </span>
+          </div>
+
+          <code id="apiStatus">
+            Connected
+          </code>
+
+        </div>
+
+
+        <div class="setting-row">
+
+          <div>
+            <span class="setting-title">
+              Database
+            </span>
+
+            <span class="setting-description">
+              Cloudflare D1
+            </span>
+          </div>
+
+          <code>
+            D1 / Trades
+          </code>
+
+        </div>
+
+
+        <div class="setting-row">
+
+          <div>
+            <span class="setting-title">
+              Data source
+            </span>
+
+            <span class="setting-description">
+              Trade history
+            </span>
+          </div>
+
+          <code>
+            REST API
+          </code>
+
+        </div>
+
+      </section>
+
+    </section>
+
+  </main>
+
+</div>
+
+
+
+<!-- ================= CLOSE TRADE MODAL ================= -->
+
+<div
+  id="closeTradeModal"
+  class="modal-overlay"
+  aria-hidden="true"
+>
+
+  <div class="modal-box">
+
+    <div class="modal-header">
+
+      <div>
+
+        <span class="modal-eyebrow">
+          TRADE MANAGEMENT
+        </span>
+
+        <h2>
+          Close Trade
+        </h2>
+
+      </div>
+
+
+      <button
+        id="closeModalBtn"
+        class="modal-x"
+        type="button"
+        aria-label="Close"
+      >
+        ×
+      </button>
+
+    </div>
+
+
+    <div
+      id="closeTradeInfo"
+      class="close-trade-info"
+    ></div>
+
+
+    <form id="closeTradeForm">
+
+      <input
+        type="hidden"
+        id="closeTradeId"
+      >
+
+
+      <label>
+
+        Close Price
+
+        <input
+          type="number"
+          id="closePrice"
+          step="0.01"
+          required
+          placeholder="3510.00"
+        >
+
+      </label>
+
+
+      <label>
+
+        Profit
+
+        <input
+          type="number"
+          id="closeProfit"
+          step="0.01"
+          required
+          placeholder="10.00"
+        >
+
+      </label>
+
+
+      <label>
+
+        Swap
+
+        <input
+          type="number"
+          id="closeSwap"
+          step="0.01"
+          value="0"
+        >
+
+      </label>
+
+
+      <label>
+
+        Commission
+
+        <input
+          type="number"
+          id="closeCommission"
+          step="0.01"
+          value="0"
+        >
+
+      </label>
+
+
+      <div class="modal-actions">
+
+        <button
+          type="button"
+          id="cancelCloseBtn"
+          class="btn-secondary"
+        >
+          Cancel
+        </button>
+
+
+        <button
+          type="submit"
+          id="confirmCloseBtn"
+          class="btn-primary"
+        >
+          Close Trade
+        </button>
+
+      </div>
+
+    </form>
+
+
+    <div
+      id="closeTradeMessage"
+      class="close-trade-message"
+    ></div>
+
+  </div>
+
+</div>
+
+
+
+<script src="script.js"></script>
+
+</body>
+              </html>
